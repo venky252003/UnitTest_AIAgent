@@ -2,27 +2,21 @@ Of course. As an AI expert, I'll guide you through the design and implementation
 
 This is a fantastic use case for AI, blending code analysis, code generation, and process automation. We'll build this system step-by-step.
 
-Conceptual Architecture of the AI Agent
+### Conceptual Architecture of the AI Agent
 
 An "AI Agent" isn't a single magical entity but a system of components working in concert. Our agent will have the following architecture:
 
-Code Analyzer (The "Eyes"): This component reads and understands the user's FastAPI source code. Instead of just reading text, we'll use Python's Abstract Syntax Tree (ast) module for a structured, reliable understanding of the API endpoints, methods, and data models (Pydantic schemas).
-
-LLM Prompt Engine (The "Brainstem"): Based on the structured data from the analyzer, this component constructs a highly detailed and specific prompt for a Large Language Model (LLM) like GPT-4. The quality of this prompt is critical for getting high-quality output.
-
-AI Core - LLM (The "Cerebral Cortex"): This is the generative heart of our agent. We'll use an LLM (e.g., via the OpenAI API) to generate two distinct artifacts based on our prompt:
-
-Python code for pytest unit tests.
-
-Markdown for technical API documentation.
-
-File System Operator (The "Hands"): This component takes the generated code and documentation from the LLM and saves them into appropriate files (e.g., test_generated_api.py, api_documentation.md).
-
-Test Executor & Reporter (The "Voice"): This component runs the newly created test file using pytest via a subprocess. It then captures the output (passes, failures, errors) and presents a clear report to the user.
+1.  **Code Analyzer (The "Eyes"):** This component reads and understands the user's FastAPI source code. Instead of just reading text, we'll use Python's Abstract Syntax Tree (`ast`) module for a structured, reliable understanding of the API endpoints, methods, and data models (Pydantic schemas).
+2.  **LLM Prompt Engine (The "Brainstem"):** Based on the structured data from the analyzer, this component constructs a highly detailed and specific prompt for a Large Language Model (LLM) like GPT-4. The quality of this prompt is critical for getting high-quality output.
+3.  **AI Core - LLM (The "Cerebral Cortex"):** This is the generative heart of our agent. We'll use an LLM (e.g., via the OpenAI API) to generate two distinct artifacts based on our prompt:
+    *   Python code for `pytest` unit tests.
+    *   Markdown for technical API documentation.
+4.  **File System Operator (The "Hands"):** This component takes the generated code and documentation from the LLM and saves them into appropriate files (e.g., `test_generated_api.py`, `api_documentation.md`).
+5.  **Test Executor & Reporter (The "Voice"):** This component runs the newly created test file using `pytest` via a subprocess. It then captures the output (passes, failures, errors) and presents a clear report to the user.
 
 Here is a visual flow of the process:
 
-Generated code
+```
 [FastAPI App: main.py] -> [1. Code Analyzer] -> [2. LLM Prompt Engine] -> [3. AI Core (LLM)]
                                                                                 |
                                      +------------------------------------------+
@@ -36,45 +30,39 @@ Generated code
                        [5. Test Executor & Reporter]
                                      |
                        [Runs Pytest & Shows Output]
+```
 
-Practical Implementation in Python
+---
+
+### Practical Implementation in Python
 
 Let's build this agent.
 
-Step 1: Prerequisites
+#### Step 1: Prerequisites
 
 First, ensure you have the necessary libraries installed.
 
-Generated bash
+```bash
 pip install fastapi uvicorn "uvicorn[standard]" pytest requests openai
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Bash
-IGNORE_WHEN_COPYING_END
+```
 
 You will also need an OpenAI API key. Set it as an environment variable for security.
 
-Generated bash
+```bash
 # In Linux/macOS
 export OPENAI_API_KEY='your-api-key-here'
 
 # In Windows (Command Prompt)
 set OPENAI_API_KEY=your-api-key-here
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Bash
-IGNORE_WHEN_COPYING_END
-Step 2: The Example FastAPI Application
+```
+
+#### Step 2: The Example FastAPI Application
 
 Let's create a simple but representative FastAPI application that our agent will work on.
 
-Save this file as main.py:
+**Save this file as `main.py`:**
 
-Generated python
+```python
 # main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -118,19 +106,15 @@ def get_item_by_id(item_id: int):
     if item_id not in fake_db:
         raise HTTPException(status_code=404, detail="Item not found")
     return fake_db[item_id]
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Python
-IGNORE_WHEN_COPYING_END
-Step 3: The AI Agent Code
+```
+
+#### Step 3: The AI Agent Code
 
 Now, for the core of our solution. This script will perform all the steps we outlined in the architecture.
 
-Save this file as agent.py:
+**Save this file as `agent.py`:**
 
-Generated python
+```python
 # agent.py
 import os
 import ast
@@ -198,195 +182,151 @@ Here is a structured analysis of the FastAPI code:
 **Pydantic Schemas:**
 ```python
 {"\n\n".join(analysis['schemas'])}
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Python
-IGNORE_WHEN_COPYING_END
+```
 
-API Endpoints:
-
-Generated json
+**API Endpoints:**
+```json
 {analysis['endpoints']}
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Json
-IGNORE_WHEN_COPYING_END
-Your Instructions:
+```
 
-1. Generate PyTest Unit Tests:
+### Your Instructions:
 
-Create a complete Python script using pytest and FastAPI's TestClient.
+**1. Generate PyTest Unit Tests:**
+- Create a complete Python script using `pytest` and FastAPI's `TestClient`.
+- Import `TestClient` from `fastapi.testclient` and the `app` from `main`.
+- Write test cases for each endpoint.
+- For each endpoint, include at least one "happy path" test (successful request).
+- For endpoints that can fail (e.g., getting a non-existent item), include a "sad path" test.
+- Use appropriate assertions (`assert response.status_code == ...`, `assert response.json() == ...`).
+- Make up realistic sample data for POST requests based on the Pydantic schemas.
 
-Import TestClient from fastapi.testclient and the app from main.
+**2. Generate Technical Documentation:**
+- Create documentation in Markdown format.
+- For each endpoint, create a section with the following structure:
+  - **Endpoint:** `HTTP_METHOD /path` (e.g., `POST /items`)
+  - **Description:** A brief explanation of what the endpoint does (infer from code).
+  - **Request Body:** If applicable, describe the JSON body and show an example based on the Pydantic schema.
+  - **Success Response:** Describe the success status code and show an example JSON response.
+  - **Error Response:** If applicable, describe potential error status codes and responses.
 
-Write test cases for each endpoint.
-
-For each endpoint, include at least one "happy path" test (successful request).
-
-For endpoints that can fail (e.g., getting a non-existent item), include a "sad path" test.
-
-Use appropriate assertions (assert response.status_code == ..., assert response.json() == ...).
-
-Make up realistic sample data for POST requests based on the Pydantic schemas.
-
-2. Generate Technical Documentation:
-
-Create documentation in Markdown format.
-
-For each endpoint, create a section with the following structure:
-
-Endpoint: HTTP_METHOD /path (e.g., POST /items)
-
-Description: A brief explanation of what the endpoint does (infer from code).
-
-Request Body: If applicable, describe the JSON body and show an example based on the Pydantic schema.
-
-Success Response: Describe the success status code and show an example JSON response.
-
-Error Response: If applicable, describe potential error status codes and responses.
-
-Output Format:
-
+### Output Format:
 Provide your response in two distinct, clearly marked blocks. Do not include any other text or explanations outside of these blocks.
 
-### TEST_CODE_START ###
+`### TEST_CODE_START ###`
 (Your complete pytest script here)
-### TEST_CODE_END ###
+`### TEST_CODE_END ###`
 
-### DOCS_START ###
+`### DOCS_START ###`
 (Your complete Markdown documentation here)
-### DOCS_END ###
+`### DOCS_END ###`
 """
-return prompt
+    return prompt
 
---- 3. AI Core (LLM) ---
-
+# --- 3. AI Core (LLM) ---
 def generate_with_llm(prompt: str) -> str:
-"""
-Sends the prompt to the LLM and gets the generated content.
-"""
-print("🤖 Contacting AI Core... This may take a moment.")
-try:
-response = openai.chat.completions.create(
-model=LLM_MODEL,
-messages=[{"role": "user", "content": prompt}],
-temperature=0.2, # Lower temperature for more deterministic code
-)
-return response.choices[0].message.content
-except Exception as e:
-print(f"❌ Error communicating with OpenAI: {e}")
-return None
+    """
+    Sends the prompt to the LLM and gets the generated content.
+    """
+    print("🤖 Contacting AI Core... This may take a moment.")
+    try:
+        response = openai.chat.completions.create(
+            model=LLM_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2, # Lower temperature for more deterministic code
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"❌ Error communicating with OpenAI: {e}")
+        return None
 
 def parse_llm_response(response: str) -> (str, str):
-"""
-Parses the LLM's response to extract the code and docs.
-"""
-try:
-test_code = response.split("### TEST_CODE_START ###")[1].split("### TEST_CODE_END ###")[0].strip()
-docs = response.split("### DOCS_START ###")[1].split("### DOCS_END ###")[0].strip()
-return test_code, docs
-except IndexError:
-print("❌ Error: LLM response was not in the expected format.")
-print("--- Raw LLM Response ---")
-print(response)
-return None, None
+    """
+    Parses the LLM's response to extract the code and docs.
+    """
+    try:
+        test_code = response.split("### TEST_CODE_START ###")[1].split("### TEST_CODE_END ###")[0].strip()
+        docs = response.split("### DOCS_START ###")[1].split("### DOCS_END ###")[0].strip()
+        return test_code, docs
+    except IndexError:
+        print("❌ Error: LLM response was not in the expected format.")
+        print("--- Raw LLM Response ---")
+        print(response)
+        return None, None
 
---- 4. File System Operator ---
-
+# --- 4. File System Operator ---
 def save_files(test_code: str, docs: str):
-"""
-Saves the generated content to files.
-"""
-with open(GENERATED_TEST_FILE, "w") as f:
-f.write(test_code)
-print(f"✅ Test file saved: {GENERATED_TEST_FILE}")
+    """
+    Saves the generated content to files.
+    """
+    with open(GENERATED_TEST_FILE, "w") as f:
+        f.write(test_code)
+    print(f"✅ Test file saved: {GENERATED_TEST_FILE}")
 
-Generated code
-with open(GENERATED_DOCS_FILE, "w") as f:
-    f.write(docs)
-print(f"✅ Documentation saved: {GENERATED_DOCS_FILE}")
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
---- 5. Test Executor & Reporter ---
+    with open(GENERATED_DOCS_FILE, "w") as f:
+        f.write(docs)
+    print(f"✅ Documentation saved: {GENERATED_DOCS_FILE}")
 
+# --- 5. Test Executor & Reporter ---
 def run_tests() -> (bool, str):
-"""
-Executes the generated pytest file and captures the output.
-"""
-print("\n🚀 Running generated tests with pytest...")
-print("-" * 50)
-process = subprocess.run(
-["pytest", "-v", GENERATED_TEST_FILE],
-capture_output=True,
-text=True
-)
-print(process.stdout)
-if process.stderr:
-print("--- Pytest Errors ---")
-print(process.stderr)
-print("-" * 50)
-
-Generated code
-success = process.returncode == 0
-return success, process.stdout
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
---- Main Agent Orchestrator ---
-
-def main():
-print("--- AI Agent for Testing & Docs: Initializing ---")
-
-Generated code
-# 1. Analyze Code
-print(f"🧐 Analyzing source code: {TARGET_FASTAPI_FILE}...")
-code_analysis = analyze_fastapi_code(TARGET_FASTAPI_FILE)
-
-# 2. Construct Prompt
-print("🧠 Constructing prompt for LLM...")
-prompt = construct_llm_prompt(code_analysis)
-
-# 3. Generate Content
-llm_response = generate_with_llm(prompt)
-if not llm_response:
-    return # Exit if LLM call failed
-
-# 4. Parse & Save
-test_code, docs = parse_llm_response(llm_response)
-if not test_code or not docs:
-    return # Exit if parsing failed
-
-save_files(test_code, docs)
-
-# 5. Execute & Report
-success, output = run_tests()
-
-if success:
-    print("✅ All generated tests passed!")
-else:
-    print("❌ Some generated tests failed. Please review the output above.")
+    """
+    Executes the generated pytest file and captures the output.
+    """
+    print("\n🚀 Running generated tests with pytest...")
+    print("-" * 50)
+    process = subprocess.run(
+        ["pytest", "-v", GENERATED_TEST_FILE],
+        capture_output=True,
+        text=True
+    )
+    print(process.stdout)
+    if process.stderr:
+        print("--- Pytest Errors ---")
+        print(process.stderr)
+    print("-" * 50)
     
-print(f"\n📄 Technical documentation has been generated at: {GENERATED_DOCS_FILE}")
-print("--- AI Agent Task Complete ---")
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
+    success = process.returncode == 0
+    return success, process.stdout
 
-if name == "main":
-main()
+# --- Main Agent Orchestrator ---
+def main():
+    print("--- AI Agent for Testing & Docs: Initializing ---")
+    
+    # 1. Analyze Code
+    print(f"🧐 Analyzing source code: {TARGET_FASTAPI_FILE}...")
+    code_analysis = analyze_fastapi_code(TARGET_FASTAPI_FILE)
+    
+    # 2. Construct Prompt
+    print("🧠 Constructing prompt for LLM...")
+    prompt = construct_llm_prompt(code_analysis)
+    
+    # 3. Generate Content
+    llm_response = generate_with_llm(prompt)
+    if not llm_response:
+        return # Exit if LLM call failed
 
-Generated code
+    # 4. Parse & Save
+    test_code, docs = parse_llm_response(llm_response)
+    if not test_code or not docs:
+        return # Exit if parsing failed
+
+    save_files(test_code, docs)
+    
+    # 5. Execute & Report
+    success, output = run_tests()
+    
+    if success:
+        print("✅ All generated tests passed!")
+    else:
+        print("❌ Some generated tests failed. Please review the output above.")
+        
+    print(f"\n📄 Technical documentation has been generated at: {GENERATED_DOCS_FILE}")
+    print("--- AI Agent Task Complete ---")
+
+
+if __name__ == "__main__":
+    main()
+```
+
 #### Step 4: How to Run the Agent
 
 1.  Make sure `main.py` and `agent.py` are in the same directory.
@@ -402,12 +342,8 @@ Generated code
 When you run the agent, you will see a series of outputs in your terminal, culminating in the `pytest` results.
 
 **Terminal Output:**
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
 
+```
 --- AI Agent for Testing & Docs: Initializing ---
 🧐 Analyzing source code: main.py...
 🧠 Constructing prompt for LLM...
@@ -416,25 +352,25 @@ IGNORE_WHEN_COPYING_END
 ✅ Documentation saved: api_documentation.md
 
 🚀 Running generated tests with pytest...
-
+--------------------------------------------------
 ============================= test session starts ==============================
 ...
 collected 5 items
 
-test_generated_api.py::test_read_root PASSED [ 20%]
-test_generated_api.py::test_create_item_happy_path PASSED [ 40%]
-test_generated_api.py::test_get_all_items PASSED [ 60%]
-test_generated_api.py::test_get_item_by_id_happy_path PASSED [ 80%]
-test_generated_api.py::test_get_item_by_id_not_found_sad_path PASSED [100%]
+test_generated_api.py::test_read_root PASSED                               [ 20%]
+test_generated_api.py::test_create_item_happy_path PASSED                  [ 40%]
+test_generated_api.py::test_get_all_items PASSED                           [ 60%]
+test_generated_api.py::test_get_item_by_id_happy_path PASSED               [ 80%]
+test_generated_api.py::test_get_item_by_id_not_found_sad_path PASSED       [100%]
 
 ============================== 5 passed in ...s ===============================
-
+--------------------------------------------------
 ✅ All generated tests passed!
 
 📄 Technical documentation has been generated at: api_documentation.md
 --- AI Agent Task Complete ---
+```
 
-Generated code
 **Generated Documentation (`api_documentation.md`):**
 
 This file will contain clean, well-formatted Markdown similar to this:
@@ -509,10 +445,6 @@ This file will contain clean, well-formatted Markdown similar to this:
       "detail": "Item not found"
     }
     ```
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
+````
 
 This agent provides a powerful, automated workflow for maintaining code quality and documentation, freeing up developer time to focus on building features. You can easily extend it to handle more complex scenarios like database mocking, authentication headers, and different project structures.
